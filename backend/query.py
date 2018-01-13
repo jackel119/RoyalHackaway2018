@@ -29,11 +29,12 @@ def isWQuestion(word):
     if "who" == word:
         return QType.WHO
  
-class Query:
-    def __init__(self):
+class Query(object):
+    def __init__(self, message_number=0):
         self.qtype = None
         self.addressee = None
         self.clause = None
+        self.message_number = message_number
 
     def __str__(self):
         return str(self.qtype)

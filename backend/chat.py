@@ -10,14 +10,11 @@ class Chat(object):
         self.thread = [value for key, value in thread.items()][0]
         self.participants = {}
         if isinstance(self.thread, User):
-            print("Instance of a User")
             self.isGroup = False
             self.participants[self.thread.uid] = lookup_table[self.thread.uid]
         else:
-            print("Instance of a group")
-            print(lookup_table)
             for part_id in self.thread.participants:
-                self.participants[part_id] = lookup_table[self.thread.uid]
+                self.participants[part_id] = lookup_table[part_id]
             self.isGroup = True
         self.participants[owner_id] =  owner_name
         self.queries = []
