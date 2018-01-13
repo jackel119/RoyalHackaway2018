@@ -13,26 +13,26 @@ class QType(Enum):
 
 def isQuestion(word):
     word = word.lower()
-    if "where" in word:
+    if "where" == word:
         return QType.WHERE
-    if "when" in word:
-        return QType.WHAT
-    if "why" in word:
+    if "when" == word:
+        return QType.WHEN
+    if "why" == word:
         return QType.WHY
-    if "how" in word:
+    if "how" == word:
         return QType.HOW
-    if "which" in word:
+    if "which" == word:
         return QType.WHICH
-    if "what" in word:
+    if "what" == word:
         return QType.WHAT
-    if "who" in word:
+    if "who" == word:
         return QType.WHO
-    if "?" in word:
+    if "?" == word:
         return QType.BOOL
  
 class Query:
     def __init__(self):
-        #self.qtype = qtype
+        self.qtype = None
         #self.addressee = addressee
         #self.clause = clause
         pass
@@ -50,6 +50,7 @@ def isQuery(message):
         word = isQuestion(word)
         if word:
             query.qtype = word
+            break
     if query.qtype:
         #Checking the addressee of the question
         if message.mentions:
@@ -62,5 +63,6 @@ def isQuery(message):
             #pronouns: replace I/me/etc with author, replace you with last person, replace he/she/them with relevant people if possible (maybe the last name mentioned in the chat?)
 
         #Checking the clause of the question
-        query.clause = set(filter(lambda word, tag : notIrrelevant(tag), message))
-        
+        #query.clause = set(filter(lambda word, tag : notIrrelevant(tag), message.text))
+        return query
+    return 
