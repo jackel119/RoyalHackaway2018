@@ -49,7 +49,7 @@ def notIrrelevant(tag):
 
 def isQuery(message):
     query = Query()
-    tagged = nltk.pos_tag(nltk.word_tokenize(message.text))
+    tagged = nltk.pos_tag(nltk.word_tokenize(message.sanitized))
     firstTag = tagged[0][1]
     if firstTag == "CC" or firstTag == "RB":
         tagged = tagged[1:]
@@ -78,6 +78,7 @@ def isQuery(message):
         query.clause = list(filter(lambda x : notIrrelevant(x[1]), tagged))
         print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'))
         print(message.text)
+        print(message.sanitized)
         print(query.qtype)
         print("Clause:", query.clause)
         print()

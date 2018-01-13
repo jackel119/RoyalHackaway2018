@@ -14,7 +14,7 @@ class Chat(object):
     def generate(self):
         for message in self.messages:
             if message.text:
-                message.text = sanize(message.text)
+                message.sanitized = sanitize(message.text)
                 # Generate Query
                 q = isQuery(message)
                 if q:
@@ -30,13 +30,22 @@ replacements = {
   'y': 'why',
   'l8': 'late',
   'u': 'you',
-  'r': 'are',
+  'ur': 'your',
+  'youre' : 'you\'re',
   'wru' : 'where are you',
   'wot' : 'what',
-  'wat' : 'what'
+  'wat' : 'what',
+  'wanna' : 'want to',
+  'gonna' : 'going to',
+  'hes' : 'he\'s',
+  'shes' :'she\'s',
   }
 
 def sanitize(text):
-    return ' '.join([replacements.get(w, w) for w in nltk.word_tokenize(text)])
+    sanitized = text[0].lower() + text[1:]
+    sanitized = sanitized.replace('?', ' ? ')
+    sanitized = sanitized.replace('.', ' . ')
+    sanitized = ' '.join([replacements.get(w, w) for w in sanitized.split()])
+    return sanitized
 
-# print(sanitize("Testing if this really works for u"))
+#print("Do you wanna go on a Wednesday night then?".split())
