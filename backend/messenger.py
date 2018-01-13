@@ -1,5 +1,6 @@
 from datetime import datetime
 from query import *
+from chat import Chat
 import time
 import json
 from fbchat import Client
@@ -23,6 +24,7 @@ class Messenger(object):
         username, login = get_login('login')
         self.client = Client(username, login)
         self.user_map = {}
+        self.chats = {}
         self._initialize_contacts()
         self.messages = []
 
@@ -39,16 +41,17 @@ class Messenger(object):
         for i in range(0,len(users)):
             print(i, ":", users[i].name)
         user = users[int(input("Please specify which chat you'd like to participate in:"))]
-        self.messages = self.client.fetchThreadMessages(thread_id=user.uid, limit=1000)[::-1]
-        for message in self.messages:
-            if message.text:
-                q = isQuery(message)
-                if q:
-                    print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'), self.user_map[message.author], message.text)
-                    print("Question Type: ", q.qtype)
-                else:
-                    print()
-            pass
+        messages = self.client.fetchThreadMessages(thread_id=user.uid, limit=1000)[::-1]
+        chat = Chat(user.name, user.uid, messages)
+        # for message in self.messages:
+        #     if message.text:
+        #         q = isQuery(message)
+        #         if q:
+        #             print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'), self.user_map[message.author], message.text)
+        #             print("Question Type: ", q.qtype)
+        #         else:
+        #             print()
+        chat.show_queries()
 
     def test(self):
         print(self.client.fetchAllUsers())

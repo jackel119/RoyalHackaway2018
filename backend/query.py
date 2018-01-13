@@ -31,9 +31,14 @@ def isWQuestion(word):
 class Query:
     def __init__(self):
         self.qtype = None
-        #self.addressee = addressee
-        #self.clause = clause
-        pass
+        self.addressee = None
+        self.clause = None
+
+    def __str__(self):
+        return str(self.qtype)
+
+    def __repr__(self):
+        return self.__str__()
 
 def notIrrelevant(tag):
     goodTags = ["NN", "NNS", "NNP", "NNPS", "VB", "VBG", "JJ", "JJR", "JJS", "RB", "RBR", "RBS"]
