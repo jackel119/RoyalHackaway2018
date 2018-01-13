@@ -1,5 +1,5 @@
 from fbchat.models import *
-from backend.query import *
+from query import *
 
 class Chat(object):
 
@@ -10,12 +10,9 @@ class Chat(object):
         self.thread = [value for key, value in thread.items()][0]
         self.participants = {}
         if isinstance(self.thread, User):
-            print("Instance of a User")
             self.isGroup = False
             self.participants[self.thread.uid] = lookup_table[self.thread.uid]
         else:
-            print("Instance of a group")
-            print(self.thread.participants)
             for part_id in self.thread.participants:
                 self.participants[part_id] = lookup_table[part_id]
             self.isGroup = True

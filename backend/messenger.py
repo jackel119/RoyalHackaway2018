@@ -1,5 +1,5 @@
-from backend.query import *
-from backend.chat import Chat
+from query import *
+from chat import Chat
 from fbchat import Client
 
 def get_login(f):
