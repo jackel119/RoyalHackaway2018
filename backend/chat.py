@@ -1,5 +1,5 @@
 from fbchat.models import *
-from backend.query import *
+from query import *
 
 class Chat(object):
 

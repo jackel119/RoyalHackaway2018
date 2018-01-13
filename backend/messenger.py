@@ -1,5 +1,5 @@
-from backend.query import *
-from backend.chat import Chat
+from query import *
+from chat import Chat
 from fbchat import Client
 
 def get_login(f):
@@ -30,17 +30,27 @@ class Messenger(object):
             self.user_map[user.uid] = user.name
 
     def run_loop(self, limit=1000):
-        print("Input the user you want to message:")
-        to_search = input()
-        users = self.client.searchForUsers(to_search) + self.client.searchForGroups(to_search)
-        users = users
-        for i in range(0,len(users)):
-            print(i, ":", users[i].name)
-        user = users[int(input("Please specify which chat you'd like to participate in: "))]
-        messages = self.client.fetchThreadMessages(thread_id=user.uid, limit=limit)[::-1]
-        thread = self.client.fetchThreadInfo(user.uid)
-        chat = Chat(user.name, user.uid, messages, thread, self.client.uid, self.user_map[self.client.uid], self.user_map)
-        print(chat.participants)
+        exit_flag = True
+        while exit_flag:
+            try:
+                print("Input the user you want to message:")
+                to_search = input()
+                if to_search == "exit":
+                    print("Exiting...")
+                    return
+                users = self.client.searchForUsers(to_search) + self.client.searchForGroups(to_search)
+                users = users
+                for i in range(0, len(users)):
+                    print(i, ":", users[i].name)
+                user = users[int(input("Please specify which chat you'd like to participate in: "))]
+                messages = self.client.fetchThreadMessages(thread_id=user.uid, limit=limit)[::-1]
+                thread = self.client.fetchThreadInfo(user.uid)
+                chat = Chat(user.name, user.uid, messages, thread, self.client.uid, self.user_map[self.client.uid], self.user_map)
+                print(chat.participants)
+            except IndexError :
+                print("Wrong index, try again.")
+            except ValueError :
+                print("Wrong literal, try again.")
 
     def test(self):
         print(self.client.fetchAllUsers())
