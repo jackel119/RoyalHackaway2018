@@ -11,7 +11,7 @@ class QType(Enum):
     WHO = 7
     BOOL = 8
 
-def isQuestion(word):
+def isWQuestion(word):
     word = word.lower()
     if "where" == word:
         return QType.WHERE
@@ -27,8 +27,6 @@ def isQuestion(word):
         return QType.WHAT
     if "who" == word:
         return QType.WHO
-    if "?" == word:
-        return QType.BOOL
  
 class Query:
     def __init__(self):
@@ -46,11 +44,19 @@ def notIrrelevant(tag):
 def isQuery(message):
     query = Query()
     tagged = nltk.pos_tag(nltk.word_tokenize(message.text))
-    for word, tag in tagged:
-        word = isQuestion(word)
-        if word:
-            query.qtype = word
-            break
+    firstTag = tagged[0][1]
+    if firstTag == "CC" or firstTag == "RB":
+        tagged = tagged[1:]
+        if not tagged:
+            return
+    wqWord = isWQuestion(tagged[0][0])
+    if wqWord:
+        query.qtype = wqWord
+    else:
+        for word, tag in tagged:
+            if word == "?":
+                query.qtype = QType.BOOL
+                break
     if query.qtype:
         #Checking the addressee of the question
         if message.mentions:
@@ -66,3 +72,4 @@ def isQuery(message):
         #query.clause = set(filter(lambda word, tag : notIrrelevant(tag), message.text))
         return query
     return 
+        
