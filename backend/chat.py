@@ -14,6 +14,7 @@ class Chat(object):
     def generate(self):
         for message in self.messages:
             if message.text:
+                message.text = sanize(message.text)
                 # Generate Query
                 q = isQuery(message)
                 if q:
@@ -24,3 +25,18 @@ class Chat(object):
 
     def show_queries(self):
         print(self.queries)
+
+replacements = {
+  'y': 'why',
+  'l8': 'late',
+  'u': 'you',
+  'r': 'are',
+  'wru' : 'where are you',
+  'wot' : 'what',
+  'wat' : 'what'
+  }
+
+def sanitize(text):
+    return ' '.join([replacements.get(w, w) for w in nltk.word_tokenize(text)])
+
+# print(sanitize("Testing if this really works for u"))
