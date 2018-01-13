@@ -45,7 +45,8 @@ class Messenger(object):
                 user = users[int(input("Please specify which chat you'd like to participate in: "))]
                 messages = self.client.fetchThreadMessages(thread_id=user.uid, limit=limit)[::-1]
                 thread = self.client.fetchThreadInfo(user.uid)
-                chat = Chat(user.name, user.uid, messages, thread, self.client.uid, self.user_map[self.client.uid], self.user_map)
+                chat = Chat(user.name, user.uid, messages, thread, self.client.uid, self.user_map[self.client.uid],
+                            self.user_map)
                 print(chat.participants)
             except IndexError :
                 print("Wrong index, try again.")
