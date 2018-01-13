@@ -75,7 +75,7 @@ def isQuery(message):
             #pronouns: replace I/me/etc with author, replace you with last person, replace he/she/them with relevant people if possible (maybe the last name mentioned in the chat?)
 
         #Checking the clause of the question
-        query.clause = set(filter(lambda x : notIrrelevant(x[1]), tagged))
+        query.clause = filter(lambda x : notIrrelevant(x[1]), tagged)
         print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'))
         print(message.text)
         print(query.qtype)
