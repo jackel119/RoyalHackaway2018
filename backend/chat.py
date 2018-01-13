@@ -1,6 +1,5 @@
-from datetime import datetime
 from fbchat.models import *
-from query import *
+from backend.query import *
 
 class Chat(object):
 
