@@ -2,14 +2,14 @@ import nltk
 from enum import Enum
 
 class QType(Enum):
-    WHERE
-    WHEN
-    WHY
-    HOW
-    WHICH
-    WHAT
-    WHO
-    BOOL
+    WHERE = 1
+    WHEN = 2
+    WHY = 3
+    HOW = 4
+    WHICH = 5
+    WHAT = 6
+    WHO = 7
+    BOOL = 8
 
 def isQuestion(word):
     word = word.lower()
