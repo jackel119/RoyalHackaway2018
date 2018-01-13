@@ -1,5 +1,6 @@
 import nltk
 from enum import Enum
+from datetime import datetime
 
 class QType(Enum):
     WHERE = 1
@@ -75,7 +76,11 @@ def isQuery(message):
 
         #Checking the clause of the question
         query.clause = set(filter(lambda x : notIrrelevant(x[1]), tagged))
-        print(query.clause)
+        print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'))
+        print(message.text)
+        print(query.qtype)
+        print("Clause:", query.clause)
+        print()
         return query
     return 
         
