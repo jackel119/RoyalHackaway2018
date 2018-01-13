@@ -31,17 +31,36 @@ def isQuestion(word):
         return QType.BOOL
  
 class Query:
-    def __init__(self, qtype, addressee, clause):
-        self.qtype = qtype
-        self.addressee = addressee
-        self.clause = clause
+    def __init__(self):
+        #self.qtype = qtype
+        #self.addressee = addressee
+        #self.clause = clause
+        pass
+
+def notIrrelevant(tag):
+    goodTags = ["NN", "NNS", "NNP", "NNPS", "VB", "VBG", "JJ", "JJR", "JJS", "RB", "RBR", "RBS"]
+    if tag in goodTags:
+        return True
+    return False
 
 def isQuery(message):
-    tagged = nltk.pos_tag(nltk.word_tokenize(message.text.lower()))
+    query = Query()
+    tagged = nltk.pos_tag(nltk.word_tokenize(message.text))
     for word, tag in tagged:
         word = isQuestion(word)
         if word:
-            self.qtype = word
-    if self.qtype:
-       # query = Query(self.qtype, )
-       pass
+            query.qtype = word
+    if query.qtype:
+        #Checking the addressee of the question
+        if message.mentions:
+            query.addressee = message.mentions[0]
+        #else if:
+            #see if there are group users' names in the message i.e. jack, dima, natalia ... for The New Socialist State
+            #if there are pronouns AND names in the message, check if the name is a user in the chat
+            #if the name is NOT a user, then the addressee will be the PRONOUN
+        #else:
+            #pronouns: replace I/me/etc with author, replace you with last person, replace he/she/them with relevant people if possible (maybe the last name mentioned in the chat?)
+
+        #Checking the clause of the question
+        query.clause = set(filter(lambda word, tag : notIrrelevant(tag), message))
+        
