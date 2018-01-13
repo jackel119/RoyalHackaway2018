@@ -27,6 +27,7 @@ class Chat(object):
         print(self.queries)
 
 replacements = {
+  #'lol' : '',
   'y': 'why',
   'l8': 'late',
   'u': 'you',
@@ -43,8 +44,7 @@ replacements = {
 
 def sanitize(text):
     sanitized = text[0].lower() + text[1:]
-    sanitized = sanitized.replace('?', ' ? ')
-    sanitized = sanitized.replace('.', ' . ')
+    sanitized = sanitized.replace('?', ' ? ').replace('.', ' . ')
     sanitized = ' '.join([replacements.get(w, w) for w in sanitized.split()])
     return sanitized
 
