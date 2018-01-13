@@ -74,7 +74,8 @@ def isQuery(message):
             #pronouns: replace I/me/etc with author, replace you with last person, replace he/she/them with relevant people if possible (maybe the last name mentioned in the chat?)
 
         #Checking the clause of the question
-        #query.clause = set(filter(lambda word, tag : notIrrelevant(tag), message.text))
+        query.clause = set(filter(lambda x : notIrrelevant(x[1]), tagged))
+        print(query.clause)
         return query
     return 
         
