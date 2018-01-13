@@ -4,12 +4,25 @@ from query import *
 
 class Chat(object):
 
-    def __init__(self, name, chat_id, messages):
+    def __init__(self, name, chat_id, messages, thread, owner_id, owner_name, lookup_table):
         self.name = name
         self.chat_id = chat_id
         self.messages = messages
+        self.thread = [value for key, value in thread.items()][0]
+        self.participants = {}
+        if isinstance(self.thread, User):
+            print("Instance of a User")
+            self.isGroup = False
+            self.participants[self.thread.uid] = lookup_table[self.thread.uid]
+        else:
+            print("Instance of a group")
+            print(lookup_table)
+            for part_id in self.thread.participants:
+                self.participants[part_id] = lookup_table[self.thread.uid]
+            self.isGroup = True
+        self.participants[owner_id] =  owner_name
         self.queries = []
-        self.generate()
+        #self.generate()
 
     def generate(self):
         for message in self.messages:
@@ -27,7 +40,6 @@ class Chat(object):
         print(self.queries)
 
 replacements = {
-  #'lol' : '',
   'y': 'why',
   'l8': 'late',
   'u': 'you',

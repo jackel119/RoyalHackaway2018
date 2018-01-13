@@ -40,9 +40,11 @@ class Messenger(object):
         users = users
         for i in range(0,len(users)):
             print(i, ":", users[i].name)
-        user = users[int(input("Please specify which chat you'd like to participate in:"))]
+        user = users[int(input("Please specify which chat you'd like to participate in: "))]
         messages = self.client.fetchThreadMessages(thread_id=user.uid, limit=limit)[::-1]
-        chat = Chat(user.name, user.uid, messages)
+        thread = self.client.fetchThreadInfo(user.uid)
+        chat = Chat(user.name, user.uid, messages, thread, self.client.uid, self.user_map[self.client.uid], self.user_map)
+        print(chat.participants)
 
     def test(self):
         print(self.client.fetchAllUsers())
@@ -52,5 +54,4 @@ class Messenger(object):
 
 if __name__ == '__main__':
     m = Messenger()
-    #print(json.dumps(m.user_map, indent=4, sort_keys=True))
     m.run_loop()
