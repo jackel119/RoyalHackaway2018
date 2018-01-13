@@ -1,6 +1,6 @@
 import nltk
 
-text = "Greetings, earthlings. I have come from the space beyond your known galaxy."
+text = "William is coming over tonight"
 
 tokens = nltk.word_tokenize(text)
 print(tokens)
