@@ -1,10 +1,6 @@
-from datetime import datetime
 from query import *
 from chat import Chat
-import time
-import json
 from fbchat import Client
-from fbchat.models import *
 
 def get_login(f):
     with open(f, 'r') as file:
