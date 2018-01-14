@@ -29,7 +29,7 @@ class Messenger(object):
         for user in self.client.fetchAllUsers():
             self.user_map[user.uid] = user.name
 
-    def _initialize_messages(self, limit=10):
+    def _initialize_messages(self, limit=1000):
         try:
             print("Input the user you want to message:")
             to_search = input()
@@ -43,7 +43,7 @@ class Messenger(object):
             user = users[int(input("Please specify which chat you'd like to participate in: "))]
             self.messages = self.client.fetchThreadMessages(thread_id=user.uid, limit=limit)[::-1]
             thread = self.client.fetchThreadInfo(user.uid)
-            self.chat = Chat(user.name, user.uid, self.messages, thread, self.client.uid, self.user_map[self.client.uid], self.user_map)
+            self.chat = Chat(user.name, user.uid, self.messages, thread, self.client.uid, self.user_map[self.client.uid], self.user_map, find_answers=True)
         except IndexError :
             traceback.print_exc()
         except ValueError :
@@ -60,4 +60,3 @@ class Messenger(object):
 
 if __name__ == '__main__':
     m = Messenger()
-    # print(m.get_messages())

@@ -45,7 +45,7 @@ class Query(object):
         print("Q Type :   ", self.qtype)
         print("Message:   ", self.text)
         print("Addressed: ", self.addressee)
-        print([keyword for keyword, tag in self.clause])
+        print("Keywords:  ", [keyword for keyword, tag in self.clause])
 
     def __str__(self):
         return str(self.qtype)

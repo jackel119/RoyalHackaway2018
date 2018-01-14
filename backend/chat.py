@@ -9,7 +9,7 @@ baseRatio = 0.7 #percentage of message.clause words needed to match with the tex
 
 class Chat(object):
 
-    def __init__(self, name, chat_id, messages, thread, owner_id, owner_name, lookup_table):
+    def __init__(self, name, chat_id, messages, thread, owner_id, owner_name, lookup_table, find_answers=True):
         self.name = name
         self.chat_id = chat_id
         self.messages = messages
@@ -29,7 +29,7 @@ class Chat(object):
         print("Participants in this conversation are:")
         for key, value in self.participants.items():
            print("    ", value) 
-        self.generate()
+        self.generate(find_answers=find_answers)
         self.show_queries()
         self.show_answers()
 
@@ -39,7 +39,7 @@ class Chat(object):
             output.append({'author' : self.participants[message.author], 'body' : message.text})
         return output
 
-    def generate(self):
+    def generate(self, find_answers=True):
         for message in self.messages:
             if message.text:
                 message.sanitized = sanitize(message.text)
@@ -47,12 +47,13 @@ class Chat(object):
                 q = self.isQuery(message)
                 if q:
                     self.queries.append(q)
-                else:
+                elif find_answers:
                     # Check if it answers another query
                     for query in self.queries:
                         answer = self.isAnswer(query, message)
                         if answer:
                             self.answers.append(answer)
+                            break
 
     def show_queries(self):
         print("------- SHOWING REMAINING QUERIES -------")
@@ -109,7 +110,7 @@ class Chat(object):
             keywords = [ word for word, tag in query.clause]
             matchRatio = 0
             tagged = nltk.pos_tag(tokens)
-            print("Tagged: ", tagged) 
+            #print("Tagged: ", tagged) 
             chunks = nltk.ne_chunk(tagged)
             for chunk in chunks:
                 # print(chunk)
@@ -142,9 +143,9 @@ class Chat(object):
                     return False
             tagged = nltk.pos_tag(nltk.word_tokenize(message.sanitized))
             for chunk in nltk.ne_chunk(tagged):
-                print("Chunk:", chunk)
+                #print("Chunk:", chunk)
                 if type(chunk) == nltk.tree.Tree:
-                    print(chunk.label())
+                    #print(chunk.label())
                     if chunk.label() == 'CD':
                         self.queries.remove(query)
                         return self.construct_answer(query, message)
