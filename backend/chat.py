@@ -5,7 +5,7 @@ from fuzzywuzzy import process
 import re
 
 fuzzRatio = 80
-baseRatio = 70 #percentage of message.clause words needed to match with the text of an answer
+baseRatio = 0.7 #percentage of message.clause words needed to match with the text of an answer
 
 class Chat(object):
 
@@ -13,6 +13,7 @@ class Chat(object):
         self.name = name
         self.chat_id = chat_id
         self.messages = messages
+        self.message_length = length(messages)
         self.thread = [value for key, value in thread.items()][0]
         self.participants = {}
         if isinstance(self.thread, User):
@@ -24,10 +25,12 @@ class Chat(object):
             self.isGroup = True
         self.participants[owner_id] =  owner_name
         self.queries = []
+        self.answers = []
         print("Participants in this conversation are:")
         for key, value in self.participants.items():
            print("    ", value) 
         self.generate()
+        self.show_answers()
 
     def get_messages(self):
         output = []
@@ -46,7 +49,9 @@ class Chat(object):
                 else:
                     # Check if it answers another query
                     for query in self.queries:
-                        if self.isAnswer(query, message):
+                        answer = self.isAnswer(query, message)
+                        if answer:
+                            self.answers.append(answer)
                             print("Answer")
                             print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'))
                             print(message.sanitized)
@@ -54,8 +59,13 @@ class Chat(object):
     def show_queries(self):
         print(self.queries)
 
+    def show_answers(self):
+        print("------- SHOWING ANSWERS -------")
+        for answer in self.answers:
+            answer.show()
+
     def isQuery(self, message):
-        query = Query()
+        query = Query(text=message.text)
         tokens = nltk.word_tokenize(message.sanitized)
         for word in tokens:
             qtype = isQuestion(word)
@@ -70,50 +80,66 @@ class Chat(object):
 
             #Checking the clause of the question
             query.clause = list(filter(lambda x : notIrrelevant(x[1]), tagged))
-            # print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'))
-            # print(message.text)
-            # print(message.sanitized)
-            # print(query.qtype)
-            # print("Clause:", query.clause)
-            # print("Addressee: ", query.addressee)
-            # print()
+            print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'))
+            print(message.text)
+            print(message.sanitized)
+            print(query.qtype)
+            print("Clause:", query.clause)
+            print("Addressee: ", query.addressee)
+            print()
             return query
         return 
+    
+    def construct_answer(self, query, message):
+        return Answer(query.text, query.qtype, query.addressee, query.clause, message.text)
 
     def isAnswer(self, query, message):
+        print("Checking if message is an answer:", message.sanitized)
+        print("Type of query: ",query.qtype)
         if query.qtype == QType.WHERE:
+            print("Query Type: ", query.qtype)
             if abs(int(query.time) - int(message.timestamp)) > 3*24*60*60:
                 #If the message is more than 3 days away from the question, it's not relevant
                 return False
             subjectName = self.findSubject(message)
-            if subjectName != query.addressee:
-                #If the message isn't talking about the same person, it's not relevant
-                return False
             tokens = nltk.word_tokenize(message.sanitized)
-            keywords = [word for word, tag in query.clause]
+            keywords = [ word for word, tag in query.clause]
             matchRatio = 0
+            tagged = nltk.pos_tag(tokens)
+            print("Tagged: ", tagged) 
+            chunks = nltk.ne_chunk(tagged)
+            for chunk in chunks:
+                print(chunk)
+                if isinstance(chunk, nltk.tree.Tree):
+                    print("Label:", chunk.label())
+                    if chunk.label() in ['GPE', 'GEO']:
+                        self.queries.remove(query)
+                        return self.construct_answer(query, message)
+            print("Keywords: ", keywords)
             for word in keywords:
                 if checkWord(tokens, word):
                     matchRatio += 1 / len(keywords)
+                    print("MatchRatio: ", matchRatio)
+                    print("BaseRatio: ", baseRatio)
                     if matchRatio > baseRatio:
-                        return True
-            tagged = nltk.pos_tag(tokens)
-            for chunk in nltk.ne_chunk(tagged):
-                if type(chunk) == nltk.tree.Tree:
-                    if chunk.label() == 'LOCATION':
-                       return True 
+                        self.queries.remove(query)
+                        return self.construct_answer(query, message)
+            print("NOT AN ANSWER")
             return False
 
         if query.qtype == QType.WHEN:
-            subjectName = self.findSubject(message)
-            if subjectName != query.addressee:
-                #If the message isn't talking about the same person, it's not relevant
-                return False
+            # subjectName = self.findSubject(message)
+            # if subjectName != query.addressee:
+            #     #If the message isn't talking about the same person, it's not relevant
+            #     return False
             tagged = nltk.pos_tag(nltk.word_tokenize(message.sanitized))
             for chunk in nltk.ne_chunk(tagged):
+                print("Chunk:", chunk)
                 if type(chunk) == nltk.tree.Tree:
-                    if chunk.label() == 'DATE' or chunk.label() == 'DURATION':
-                        return True
+                    print(chunk.label())
+                    if chunk.label() == 'CD':
+                        self.queries.remove(query)
+                        return self.construct_answer(query, message)
             return False
 
         if query.qtype == QType.WHY:

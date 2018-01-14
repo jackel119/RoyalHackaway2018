@@ -29,7 +29,7 @@ class Messenger(object):
         for user in self.client.fetchAllUsers():
             self.user_map[user.uid] = user.name
 
-    def _initialize_messages(self, limit=3):
+    def _initialize_messages(self, limit=5):
         try:
             print("Input the user you want to message:")
             to_search = input()
@@ -49,7 +49,7 @@ class Messenger(object):
         except ValueError :
             traceback.print_exc()
 
-    def run_loop(self, limit=3):
+    def run_loop(self, limit=150):
         print("Wrong literal, try again.")
         while True:
             self._initialize_messages(limit=limit)
@@ -60,4 +60,4 @@ class Messenger(object):
 
 if __name__ == '__main__':
     m = Messenger()
-    print(m.get_messages())
+    # print(m.get_messages())
