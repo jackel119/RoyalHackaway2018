@@ -72,7 +72,25 @@ class Chat(object):
                                 break
             if not query.addressee:
                 # if there's no name mentioned, checks pronouns
-                pass
+                pronouns = list(filter(lambda x : x[1] == "PRP", tagged))
+                if "you" in pronouns:
+                    pronoun = "you"
+                else:
+                    pronoun = pronouns[0]
+                if pronoun == "I" or pronoun == "me" or pronoun == "myself":
+                    query.addressee = self.participants[message.author]
+                if pronoun == "you":
+                    currentMessage = message
+                    index = 0
+                    while currentMessage.author == message.author:
+                        index = self.messages.index(currentMessage) - 1
+                        if index < 0:
+                            break
+                        currentMessage = self.messages[index]
+                    if index >=0:
+                        query.addressee = self.participants[currentMessage.author]
+                    
+
 
                 
 
