@@ -30,6 +30,7 @@ class Chat(object):
         for key, value in self.participants.items():
            print("    ", value) 
         self.generate()
+        self.show_queries()
         self.show_answers()
 
     def get_messages(self):
@@ -52,12 +53,11 @@ class Chat(object):
                         answer = self.isAnswer(query, message)
                         if answer:
                             self.answers.append(answer)
-                            print("Answer")
-                            print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'))
-                            print(message.sanitized)
 
     def show_queries(self):
-        print(self.queries)
+        print("------- SHOWING QUERIES -------")
+        for q in self.queries:
+            q.show()
 
     def show_answers(self):
         print("------- SHOWING ANSWERS -------")
@@ -80,13 +80,13 @@ class Chat(object):
 
             #Checking the clause of the question
             query.clause = list(filter(lambda x : notIrrelevant(x[1]), tagged))
-            print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'))
-            print(message.text)
-            print(message.sanitized)
-            print(query.qtype)
-            print("Clause:", query.clause)
-            print("Addressee: ", query.addressee)
-            print()
+            # print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'))
+            # print(message.text)
+            # print(message.sanitized)
+            # print(query.qtype)
+            # print("Clause:", query.clause)
+            # print("Addressee: ", query.addressee)
+            # print()
             return query
         return 
     
@@ -94,10 +94,10 @@ class Chat(object):
         return Answer(query.text, query.qtype, query.addressee, query.clause, message.text)
 
     def isAnswer(self, query, message):
-        print("Checking if message is an answer:", message.sanitized)
-        print("Type of query: ",query.qtype)
+        # print("Checking if message is an answer:", message.sanitized)
+        # print("Type of query: ",query.qtype)
         if query.qtype == QType.WHERE:
-            print("Query Type: ", query.qtype)
+            # print("Query Type: ", query.qtype)
             if abs(int(query.time) - int(message.timestamp)) > 3*24*60*60:
                 #If the message is more than 3 days away from the question, it's not relevant
                 return False
@@ -109,25 +109,25 @@ class Chat(object):
             keywords = [ word for word, tag in query.clause]
             matchRatio = 0
             tagged = nltk.pos_tag(tokens)
-            print("Tagged: ", tagged) 
+            # print("Tagged: ", tagged) 
             chunks = nltk.ne_chunk(tagged)
             for chunk in chunks:
-                print(chunk)
+                # print(chunk)
                 if isinstance(chunk, nltk.tree.Tree):
-                    print("Label:", chunk.label())
+                    # print("Label:", chunk.label())
                     if chunk.label() in ['GPE', 'GEO']:
                         self.queries.remove(query)
                         return self.construct_answer(query, message)
-            print("Keywords: ", keywords)
+            # print("Keywords: ", keywords)
             for word in keywords:
                 if checkWord(tokens, word):
                     matchRatio += 1 / len(keywords)
-                    print("MatchRatio: ", matchRatio)
-                    print("BaseRatio: ", baseRatio)
+                    # print("MatchRatio: ", matchRatio)
+                    # print("BaseRatio: ", baseRatio)
                     if matchRatio > baseRatio:
                         self.queries.remove(query)
                         return self.construct_answer(query, message)
-            print("NOT AN ANSWER")
+            # print("NOT AN ANSWER")
             return False
 
         if query.qtype == QType.WHEN:
@@ -162,6 +162,10 @@ class Chat(object):
             return
 
         if query.qtype == QType.BOOL:
+            for word in message.sanitized.split():
+                if word.lower() in ['yes', 'no']:
+                    self.queries.remove(query)
+                    return self.construct_answer(query, message)
             return
 
     def findSubject(self, message):

@@ -40,6 +40,13 @@ class Query(object):
         self.time = None
         self.message_number = message_number
 
+    def show(self):
+        print()
+        print(self.text)
+        print(self.qtype)
+        print(self.addressee)
+        print(self.clause)
+
     def __str__(self):
         return str(self.qtype)
 
@@ -61,6 +68,7 @@ class Answer(object):
         self.text = text
 
     def show(self):
+        print()
         print(self.qtext)
         print(self.qtype)
         print(self.addressee)
