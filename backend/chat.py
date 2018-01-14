@@ -18,6 +18,9 @@ class Chat(object):
             self.isGroup = True
         self.participants[owner_id] =  owner_name
         self.queries = []
+        print("Participants in this conversation are:")
+        for key, value in self.participants.items():
+           print("    ", value) 
         self.generate()
 
     def generate(self):

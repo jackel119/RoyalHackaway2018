@@ -46,7 +46,6 @@ class Messenger(object):
                 messages = self.client.fetchThreadMessages(thread_id=user.uid, limit=limit)[::-1]
                 thread = self.client.fetchThreadInfo(user.uid)
                 chat = Chat(user.name, user.uid, messages, thread, self.client.uid, self.user_map[self.client.uid], self.user_map)
-                print(chat.participants)
             except IndexError :
                 print("Wrong index, try again.")
             except ValueError :
