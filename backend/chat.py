@@ -2,8 +2,10 @@ from fbchat.models import *
 from query import *
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
+import re
 
-fuzzRatio = 80 
+fuzzRatio = 80
+baseRatio = 70 #percentage of message.clause words needed to match with the text of an answer
 
 class Chat(object):
 
@@ -43,65 +45,28 @@ class Chat(object):
                     self.queries.append(q)
                 else:
                     # Check if it answers another query
-                    pass
+                    for query in self.queries:
+                        if self.isAnswer(query, message):
+                            print("Answer")
+                            print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'))
+                            print(message.sanitized)
 
     def show_queries(self):
         print(self.queries)
 
     def isQuery(self, message):
         query = Query()
-        tagged = nltk.pos_tag(nltk.word_tokenize(message.sanitized))
-        for word, tag in tagged:
+        tokens = nltk.word_tokenize(message.sanitized)
+        for word in tokens:
             qtype = isQuestion(word)
             if qtype:
                 query.qtype = qtype
                 break
         if query.qtype:
-            #Checking the addressee of the question
-            if message.mentions:
-                # the person is @'d
-                query.addressee = self.participants[message.mentions[0].thread_id]
-            else:
-                # checks to see if the person is mentioned in the message
-                names = [value for key, value in self.participants.items()]
-                for word, tag in tagged:
-                    for name in names:
-                        word = word.lower()
-                        uName = name.lower()
-                        if fuzz.ratio(word, uName) > fuzzRatio:
-                            query.addressee = name
-                            break
-                        splitName = uName.split(" ")
-                        for subName in splitName:
-                            if fuzz.ratio(word, subName) > fuzzRatio:
-                                query.addressee = name
-                                break
-            if not query.addressee:
-                # if there's no name mentioned, checks pronouns
-                pronouns = list(filter(lambda x : x[1] == "PRP", tagged))
-                if pronouns:
-                    if "you" in pronouns:
-                        pronoun = "you"
-                    else:
-                        pronoun = pronouns[0]
-                    if pronoun == "I" or pronoun == "me" or pronoun == "myself":
-                        query.addressee = self.participants[message.author]
-                    if pronoun == "you":
-                        currentMessage = message
-                        index = 0
-                        while currentMessage.author == message.author:
-                            index = self.messages.index(currentMessage) - 1
-                            if index < 0:
-                                break
-                            currentMessage = self.messages[index]
-                        if index >=0:
-                            query.addressee = self.participants[currentMessage.author]
-                else:
-                    return
-                    
+            query.time = message.timestamp
+            query.addressee = self.findSubject(message)
 
-
-                
+            tagged = nltk.pos_tag(tokens)
 
             #Checking the clause of the question
             query.clause = list(filter(lambda x : notIrrelevant(x[1]), tagged))
@@ -114,15 +79,120 @@ class Chat(object):
             # print()
             return query
         return 
-   
-def isName(posName, names):
-    if posName in names:
-        return posName
-    for name in names:
-        sepName = name.split(" ")
-        if posName in sepName:
-            return name
-    return
+
+    def isAnswer(self, query, message):
+        if query.qtype == QType.WHERE:
+            if abs(int(query.time) - int(message.timestamp)) > 3*24*60*60:
+                #If the message is more than 3 days away from the question, it's not relevant
+                return False
+            subjectName = self.findSubject(message)
+            if subjectName != query.addressee:
+                #If the message isn't talking about the same person, it's not relevant
+                return False
+            tokens = nltk.word_tokenize(message.sanitized)
+            keywords = [word for word, tag in query.clause]
+            matchRatio = 0
+            for word in keywords:
+                if checkWord(tokens, word):
+                    matchRatio += 1 / len(keywords)
+                    if matchRatio > baseRatio:
+                        return True
+            tagged = nltk.pos_tag(tokens)
+            for chunk in nltk.ne_chunk(tagged):
+                if type(chunk) == nltk.tree.Tree:
+                    if chunk.label() == 'LOCATION':
+                       return True 
+            return False
+
+        if query.qtype == QType.WHEN:
+            subjectName = self.findSubject(message)
+            if subjectName != query.addressee:
+                #If the message isn't talking about the same person, it's not relevant
+                return False
+            tagged = nltk.pos_tag(nltk.word_tokenize(message.sanitized))
+            for chunk in nltk.ne_chunk(tagged):
+                if type(chunk) == nltk.tree.Tree:
+                    if chunk.label() == 'DATE' or chunk.label() == 'DURATION':
+                        return True
+            return False
+
+        if query.qtype == QType.WHY:
+            return
+
+        if query.qtype == QType.HOW:
+            return
+
+        if query.qtype == QType.WHICH:
+            return
+
+        if query.qtype == QType.WHAT:
+            return
+
+        if query.qtype == QType.WHO:
+            return
+
+        if query.qtype == QType.BOOL:
+            return
+
+    def findSubject(self, message):
+        tagged = nltk.pos_tag(nltk.word_tokenize(message.sanitized))
+        if message.mentions:
+             # the person is @'d
+             return self.participants[message.mentions[0].thread_id]
+        else:
+             # checks to see if the person is mentioned in the message
+             names = [value for key, value in self.participants.items()]
+             posName =  findName([word for word, tag in tagged], names)
+             if posName:
+                 return posName
+         
+        # if there's no name mentioned, checks pronouns
+        pronouns = [word for word, tag in list(filter(lambda x : x[1] == "PRP", tagged))]
+        if pronouns:
+            pronoun = ""
+            if "you" in pronouns:
+                pronoun = "you"
+            else:
+                pronoun = pronouns[0]
+            if pronoun == "I" or pronoun == "me" or pronoun == "myself":
+                return self.participants[message.author]
+            if pronoun == "you":
+                currentMessage = message
+                index = 0
+                while currentMessage.author == message.author:
+                    index = self.messages.index(currentMessage) - 1
+                    if index < 0:
+                        break
+                    currentMessage = self.messages[index]
+                if index >=0:
+                    return self.participants[currentMessage.author]
+            if pronoun == "we" or pronoun == "us":
+                return " ".join([value for key, value in self.participants.items()])
+        return
+
+
+def checkWord(stringList, word):
+    word = word.lower()
+    for string in stringList:
+        string = string.lower()
+        if fuzz.ratio(word, string) > fuzzRatio:
+            return True
+    return False
+
+
+def findName(stringList, nameList):
+    for word in stringList:
+         for name in nameList:
+              word = word.lower()
+              lowerName = name.lower()
+              if fuzz.ratio(word, lowerName) > fuzzRatio:
+                   return name 
+              splitName = lowerName.split(" ")
+              for subName in splitName:
+                   if fuzz.ratio(word, subName) > fuzzRatio:
+                        return name
+
+
 
 replacements = {
   'y': 'why',
@@ -138,6 +208,7 @@ replacements = {
   'hes' : 'he\'s',
   'shes' :'she\'s',
   }
+
 
 def sanitize(text):
     sanitized = text[0].lower() + text[1:]

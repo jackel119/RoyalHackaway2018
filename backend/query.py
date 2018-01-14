@@ -36,6 +36,7 @@ class Query(object):
         self.qtype = None
         self.addressee = None
         self.clause = None
+        self.time = None
         self.message_number = message_number
 
     def __str__(self):
