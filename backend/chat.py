@@ -109,7 +109,7 @@ class Chat(object):
             keywords = [ word for word, tag in query.clause]
             matchRatio = 0
             tagged = nltk.pos_tag(tokens)
-            # print("Tagged: ", tagged) 
+            print("Tagged: ", tagged) 
             chunks = nltk.ne_chunk(tagged)
             for chunk in chunks:
                 # print(chunk)
@@ -118,6 +118,10 @@ class Chat(object):
                     if chunk.label() in ['GPE', 'GEO']:
                         self.queries.remove(query)
                         return self.construct_answer(query, message)
+            for word, tag in tagged:
+                if tag == 'NN':
+                    self.queries.remove(query)
+                    return self.construct_answer(query, message)
             # print("Keywords: ", keywords)
             for word in keywords:
                 if checkWord(tokens, word):
