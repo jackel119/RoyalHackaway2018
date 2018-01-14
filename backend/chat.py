@@ -1,5 +1,9 @@
 from fbchat.models import *
 from query import *
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
+
+fuzzRatio = 80 
 
 class Chat(object):
 
@@ -41,31 +45,36 @@ class Chat(object):
     def isQuery(self, message):
         query = Query()
         tagged = nltk.pos_tag(nltk.word_tokenize(message.sanitized))
-        firstTag = tagged[0][1]
-        if firstTag == "CC" or firstTag == "RB":
-            tagged = tagged[1:]
-            if not tagged:
-                return
-        wqWord = isWQuestion(tagged[0][0])
-        if wqWord:
-            query.qtype = wqWord
-        else:
-            for word, tag in tagged:
-                if word == "?":
-                    query.qtype = QType.BOOL
-                    break
+        for word, tag in tagged:
+            qtype = isQuestion(word)
+            if qtype:
+                query.qtype = qtype
+                break
         if query.qtype:
             #Checking the addressee of the question
             if message.mentions:
+                # the person is @'d
                 query.addressee = self.participants[message.mentions[0].thread_id]
-                #see if there are group users' names in the message i.e. jack, dima, natalia ... for The New Socialist State
-                #if there are pronouns AND names in the message, check if the name is a user in the chat
-                #if the name is NOT a user, then the addressee will be the PRONOUN
-                #pronouns: replace I/me/etc with author, replace you with last person, replace he/she/them with relevant people if possible (maybe the last name mentioned in the chat?)
             else:
-                names = list(filter(lambda x : x[0] in [value for key,value in self.participants.items()], tagged))
-                if names:
-                    query.addressee = names[0]
+                # checks to see if the person is mentioned in the message
+                names = [value for key, value in self.participants.items()]
+                for word, tag in tagged:
+                    for name in names:
+                        word = word.lower()
+                        uName = name.lower()
+                        if fuzz.ratio(word, uName) > fuzzRatio:
+                            query.addressee = name
+                            break
+                        splitName = uName.split(" ")
+                        for subName in splitName:
+                            if fuzz.ratio(word, subName) > fuzzRatio:
+                                query.addressee = name
+                                break
+            if not query.addressee:
+                # if there's no name mentioned, checks pronouns
+                pass
+
+                
 
             #Checking the clause of the question
             query.clause = list(filter(lambda x : notIrrelevant(x[1]), tagged))
@@ -80,6 +89,14 @@ class Chat(object):
             return query
         return 
    
+def isName(posName, names):
+    if posName in names:
+        return posName
+    for name in names:
+        sepName = name.split(" ")
+        if posName in sepName:
+            return name
+    return
 
 replacements = {
   'y': 'why',
