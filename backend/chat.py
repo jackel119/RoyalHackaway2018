@@ -55,12 +55,12 @@ class Chat(object):
                             self.answers.append(answer)
 
     def show_queries(self):
-        print("------- SHOWING QUERIES -------")
+        print("------- SHOWING REMAINING QUERIES -------")
         for q in self.queries:
             q.show()
 
     def show_answers(self):
-        print("------- SHOWING ANSWERS -------")
+        print("------- SHOWING ACHIEVED ANSWERS -------")
         for answer in self.answers:
             answer.show()
 
