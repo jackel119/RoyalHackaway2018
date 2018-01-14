@@ -13,7 +13,7 @@ class Chat(object):
         self.name = name
         self.chat_id = chat_id
         self.messages = messages
-        self.message_length = length(messages)
+        self.message_length = len(messages)
         self.thread = [value for key, value in thread.items()][0]
         self.participants = {}
         if isinstance(self.thread, User):
@@ -102,6 +102,9 @@ class Chat(object):
                 #If the message is more than 3 days away from the question, it's not relevant
                 return False
             subjectName = self.findSubject(message)
+            if query.addressee and subjectName:
+                if subjectName != query.addressee:
+                    return False
             tokens = nltk.word_tokenize(message.sanitized)
             keywords = [ word for word, tag in query.clause]
             matchRatio = 0
@@ -128,10 +131,11 @@ class Chat(object):
             return False
 
         if query.qtype == QType.WHEN:
-            # subjectName = self.findSubject(message)
-            # if subjectName != query.addressee:
-            #     #If the message isn't talking about the same person, it's not relevant
-            #     return False
+            subjectName = self.findSubject(message)
+            if query.addressee and subjectName:
+                if subjectName != query.addressee:
+                    #If the message isn't talking about the same person, it's not relevant
+                    return False
             tagged = nltk.pos_tag(nltk.word_tokenize(message.sanitized))
             for chunk in nltk.ne_chunk(tagged):
                 print("Chunk:", chunk)
@@ -161,7 +165,13 @@ class Chat(object):
             return
 
     def findSubject(self, message):
-        tagged = nltk.pos_tag(nltk.word_tokenize(message.sanitized))
+        tokens = []
+        for token in nltk.word_tokenize(message.sanitized):
+            if token == "i":
+                tokens.append("I")
+            else:
+                tokens.append(token)
+        tagged = nltk.pos_tag(tokens)
         if message.mentions:
              # the person is @'d
              return self.participants[message.mentions[0].thread_id]
