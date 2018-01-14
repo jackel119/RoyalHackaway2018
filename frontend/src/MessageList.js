@@ -1,16 +1,27 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import './MessageList.css'
+import Message from './Message'
 
 class MessageList extends Component {
-  render() {
+  static propTypes = {
+    messages: PropTypes.arrayOf(PropTypes.object)
+  }
+
+  static defaultProps = {
+    messages: [],
+  }
+
+  render() {
     return (
-      <div className="MessageList">
-        <div>Connecting...</div>
-        <div><span className="author">You:</span> Hello!</div>
-        <div><span className="author">Them:</span> Hey there!</div>
+      <div className="MessageList">
+        {this.props.messages.map((message, i) => (
+            <Message key={i} {...message} />
+          ))}
       </div>
     )
   }
+
 }
 
 export default MessageList
