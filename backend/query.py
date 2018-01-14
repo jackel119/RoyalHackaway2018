@@ -12,7 +12,7 @@ class QType(Enum):
     WHO = 7
     BOOL = 8
 
-def isWQuestion(word):
+def isQuestion(word):
     word = word.lower()
     if "where" == word:
         return QType.WHERE
@@ -28,6 +28,8 @@ def isWQuestion(word):
         return QType.WHAT
     if "who" == word:
         return QType.WHO
+    if "?" == word:
+        return QType.BOOL
  
 class Query(object):
     def __init__(self, message_number=0):
