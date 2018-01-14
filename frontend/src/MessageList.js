@@ -12,16 +12,19 @@ class MessageList extends Component {
     messages: [],
   }
 
-  render() {
-    return (
-      <div className="MessageList">
-        {this.props.messages.map((message, i) => (
-            <Message key={i} {...message} />
-          ))}
-      </div>
-    )
-  }
+  componentDidUpdate = () => {
+    this.node.scrollTop = this.node.scrollHeight
+  }
 
+  render() {
+    return (
+      <div className="MessageList" ref={(node) => (this.node = node)}>
+      {this.props.messages.map((message, i) => (
+        <Message key={i} {...message} />
+      ))}
+      </div>
+    )
+  }
 }
 
 export default MessageList

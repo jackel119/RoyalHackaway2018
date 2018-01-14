@@ -21,44 +21,43 @@ class Messenger(object):
         username, login = get_login('login')
         self.client = Client(username, login)
         self.user_map = {}
-        self.chats = {}
         self._initialize_contacts()
-        self.messages = []
+        self._initialize_messages()
 
     def _initialize_contacts(self):
         self.user_map[self.client.uid] = self.client.fetchUserInfo(self.client.uid)[self.client.uid].name
         for user in self.client.fetchAllUsers():
             self.user_map[user.uid] = user.name
 
-    def run_loop(self, limit=1000):
-        exit_flag = True
-        while exit_flag:
-            try:
-                print("Input the user you want to message:")
-                to_search = input()
-                if to_search == "exit":
-                    print("Exiting...")
-                    return
-                users = self.client.searchForUsers(to_search) + self.client.searchForGroups(to_search)
-                users = users
-                for i in range(0, len(users)):
-                    print(i, ":", users[i].name)
-                user = users[int(input("Please specify which chat you'd like to participate in: "))]
-                messages = self.client.fetchThreadMessages(thread_id=user.uid, limit=limit)[::-1]
-                thread = self.client.fetchThreadInfo(user.uid)
-                chat = Chat(user.name, user.uid, messages, thread, self.client.uid, self.user_map[self.client.uid], self.user_map)
-            except IndexError :
-                print("Wrong index, try again.")
-                traceback.print_exc()
-            except ValueError :
-                print("Wrong literal, try again.")
+    def _initialize_messages(self, limit=3):
+        try:
+            print("Input the user you want to message:")
+            to_search = input()
+            if to_search == "exit":
+                print("Exiting...")
+                return
+            users = self.client.searchForUsers(to_search) + self.client.searchForGroups(to_search)
+            users = users
+            for i in range(0, len(users)):
+                print(i, ":", users[i].name)
+            user = users[int(input("Please specify which chat you'd like to participate in: "))]
+            self.messages = self.client.fetchThreadMessages(thread_id=user.uid, limit=limit)[::-1]
+            thread = self.client.fetchThreadInfo(user.uid)
+            self.chat = Chat(user.name, user.uid, self.messages, thread, self.client.uid, self.user_map[self.client.uid], self.user_map)
+        except IndexError :
+            traceback.print_exc()
+        except ValueError :
+            traceback.print_exc()
 
-    def test(self):
-        print(self.client.fetchAllUsers())
-        print(type(self.client.fetchAllUsers()[0]))
+    def run_loop(self, limit=3):
+        print("Wrong literal, try again.")
+        while True:
+            self._initialize_messages(limit=limit)
 
+    def get_messages(self):
+        return self.chat.get_messages()
 
 
 if __name__ == '__main__':
     m = Messenger()
-    m.run_loop()
+    print(m.get_messages())

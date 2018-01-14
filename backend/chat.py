@@ -27,6 +27,12 @@ class Chat(object):
            print("    ", value) 
         self.generate()
 
+    def get_messages(self):
+        output = []
+        for message in self.messages:
+            output.append({'author' : self.participants[message.author], 'body' : message.text})
+        return output
+
     def generate(self):
         for message in self.messages:
             if message.text:
@@ -99,13 +105,13 @@ class Chat(object):
 
             #Checking the clause of the question
             query.clause = list(filter(lambda x : notIrrelevant(x[1]), tagged))
-            print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'))
-            print(message.text)
-            print(message.sanitized)
-            print(query.qtype)
-            print("Clause:", query.clause)
-            print("Addressee: ", query.addressee)
-            print()
+            # print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'))
+            # print(message.text)
+            # print(message.sanitized)
+            # print(query.qtype)
+            # print("Clause:", query.clause)
+            # print("Addressee: ", query.addressee)
+            # print()
             return query
         return 
    
