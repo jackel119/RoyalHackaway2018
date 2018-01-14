@@ -1,4 +1,5 @@
 from query import *
+import traceback
 from chat import Chat
 from fbchat import Client
 
@@ -48,6 +49,7 @@ class Messenger(object):
                 chat = Chat(user.name, user.uid, messages, thread, self.client.uid, self.user_map[self.client.uid], self.user_map)
             except IndexError :
                 print("Wrong index, try again.")
+                traceback.print_exc()
             except ValueError :
                 print("Wrong literal, try again.")
 

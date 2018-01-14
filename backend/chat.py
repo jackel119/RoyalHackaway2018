@@ -73,22 +73,25 @@ class Chat(object):
             if not query.addressee:
                 # if there's no name mentioned, checks pronouns
                 pronouns = list(filter(lambda x : x[1] == "PRP", tagged))
-                if "you" in pronouns:
-                    pronoun = "you"
+                if pronouns:
+                    if "you" in pronouns:
+                        pronoun = "you"
+                    else:
+                        pronoun = pronouns[0]
+                    if pronoun == "I" or pronoun == "me" or pronoun == "myself":
+                        query.addressee = self.participants[message.author]
+                    if pronoun == "you":
+                        currentMessage = message
+                        index = 0
+                        while currentMessage.author == message.author:
+                            index = self.messages.index(currentMessage) - 1
+                            if index < 0:
+                                break
+                            currentMessage = self.messages[index]
+                        if index >=0:
+                            query.addressee = self.participants[currentMessage.author]
                 else:
-                    pronoun = pronouns[0]
-                if pronoun == "I" or pronoun == "me" or pronoun == "myself":
-                    query.addressee = self.participants[message.author]
-                if pronoun == "you":
-                    currentMessage = message
-                    index = 0
-                    while currentMessage.author == message.author:
-                        index = self.messages.index(currentMessage) - 1
-                        if index < 0:
-                            break
-                        currentMessage = self.messages[index]
-                    if index >=0:
-                        query.addressee = self.participants[currentMessage.author]
+                    return
                     
 
 
@@ -96,14 +99,13 @@ class Chat(object):
 
             #Checking the clause of the question
             query.clause = list(filter(lambda x : notIrrelevant(x[1]), tagged))
-            if query.addressee:
-              print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'))
-              print(message.text)
-              print(message.sanitized)
-              print(query.qtype)
-              print("Clause:", query.clause)
-              print("Addressee: ", query.addressee)
-              print()
+            print(datetime.fromtimestamp(int(message.timestamp) // 1000).strftime('%Y-%m-%d %H:%M:%S'))
+            print(message.text)
+            print(message.sanitized)
+            print(query.qtype)
+            print("Clause:", query.clause)
+            print("Addressee: ", query.addressee)
+            print()
             return query
         return 
    
