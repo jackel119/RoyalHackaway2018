@@ -29,7 +29,7 @@ class Messenger(object):
         for user in self.client.fetchAllUsers():
             self.user_map[user.uid] = user.name
 
-    def _initialize_messages(self, limit=5):
+    def _initialize_messages(self, limit=10):
         try:
             print("Input the user you want to message:")
             to_search = input()

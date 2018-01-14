@@ -167,7 +167,7 @@ class Chat(object):
 
         if query.qtype == QType.BOOL:
             for word in message.sanitized.split():
-                if word.lower() in ['yes', 'no']:
+                if word.lower() in ['yes', 'no', 'yeah', 'yea', 'ya', 'nah']:
                     self.queries.remove(query)
                     return self.construct_answer(query, message)
             return
